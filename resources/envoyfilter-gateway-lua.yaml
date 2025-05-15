@@ -1,0 +1,43 @@
+apiVersion: networking.istio.io/v1alpha3
+kind: EnvoyFilter
+metadata:
+  name: inject-error-code-ingress
+  namespace: istio-system
+spec:
+  workloadSelector:
+    labels:
+      istio: ingressgateway
+  configPatches:
+    - applyTo: HTTP_FILTER
+      match:
+        context: GATEWAY
+        listener:
+          filterChain:
+            filter:
+              name: "envoy.filters.network.http_connection_manager"
+      patch:
+        operation: INSERT_BEFORE
+        value:
+          name: envoy.filters.http.lua
+          typed_config:
+            "@type": type.googleapis.com/envoy.extensions.filters.http.lua.v3.Lua
+            inline_code: |
+              -- Tiny JSON parser (basic string key-value only)
+              local json = {}
+              function json.parse(str)
+                local result = {}
+                for k, v in string.gmatch(str, '"([^"]+)"%s*:%s*"(.-)"') do
+                  result[k] = v
+                end
+                return result
+              end
+
+              function envoy_on_response(response_handle)
+                local body = response_handle:body():getBytes(0, response_handle:body():length())
+                local data = json.parse(body)
+                if data and data["error_code"] then
+                  response_handle:streamInfo():dynamicMetadata():set("custom", "error_code", data["error_code"])
+                else
+                  response_handle:streamInfo():dynamicMetadata():set("custom", "error_code", "missing")
+                end
+              end

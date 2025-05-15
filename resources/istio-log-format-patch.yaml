@@ -1,0 +1,10 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: istio
+  namespace: istio-system
+data:
+  mesh: |
+    accessLogFile: /dev/stdout
+    accessLogFormat: '[%START_TIME%] "%REQ(:METHOD)% %REQ(:PATH)%" %RESPONSE_CODE% error_code=%DYNAMIC_METADATA(custom:error_code)%'
+
