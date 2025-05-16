@@ -5,17 +5,17 @@
 - kubectl installed and PATH'ed
 
 # Setup
-1. setup k3s, istio and the sample app `./setup.sh`
+1. setup kind, istio and the sample app `./setup.sh`
 2. port forward through istio`kubectl -n istio-system port-forward svc/istio-ingressgateway 8081:80`
 
 # Workflow
 1. Make changes to the lua script in resources 
 2. run above setup 
-3. `curl -i -H "Host: localhost" http://localhost:8081/`
+3. `curl -i -H "Host: app.local" http://localhost:8081/`
 4. `kubectl logs -n istio-system -lapp=istio-ingressgateway` 
 
 # reset cluster
 ```
-k3d cluster delete istio-demo
+kind delete cluster -n istio-demo
 ```
 

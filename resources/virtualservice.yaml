@@ -5,7 +5,7 @@ metadata:
   namespace: default
 spec:
   hosts:
-    - "*"
+    - app.local 
   gateways:
     - app-gateway
   http:
